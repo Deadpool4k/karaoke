@@ -1,0 +1,75 @@
+@import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer utilities {
+  .text-glow-magenta {
+    text-shadow:
+      0 0 10px rgba(255, 0, 255, 0.8),
+      0 0 20px rgba(255, 0, 255, 0.6),
+      0 0 40px rgba(255, 0, 255, 0.4),
+      0 0 80px rgba(255, 0, 255, 0.2);
+  }
+
+  .text-glow-yellow {
+    text-shadow:
+      0 0 10px rgba(255, 255, 0, 0.8),
+      0 0 20px rgba(255, 255, 0, 0.6),
+      0 0 40px rgba(255, 255, 0, 0.4);
+  }
+
+  .text-glow-white {
+    text-shadow:
+      0 0 10px rgba(255, 255, 255, 0.8),
+      0 0 20px rgba(255, 255, 255, 0.5),
+      0 0 40px rgba(255, 255, 255, 0.3);
+  }
+
+  .text-lyrics-premium {
+    color: #c9c4d4;
+    text-shadow:
+      0 0 30px rgba(200, 120, 220, 0.12),
+      0 0 60px rgba(180, 80, 200, 0.06),
+      0 2px 20px rgba(0, 0, 0, 0.9);
+  }
+
+  .border-glow-magenta {
+    box-shadow:
+      0 0 10px rgba(255, 0, 255, 0.5),
+      inset 0 0 10px rgba(255, 0, 255, 0.1);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: #111;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #ff00ff66;
+    border-radius: 2px;
+  }
+}
