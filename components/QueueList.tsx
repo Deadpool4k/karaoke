@@ -109,6 +109,11 @@ function QueueRow({
               Lyrics
             </span>
           )}
+          {item.skipReveal && (
+            <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-neon-yellow/20 text-neon-yellow border border-neon-yellow/30">
+              Direct
+            </span>
+          )}
         </div>
         {!hideSongField(item.mode) && item.songName && (
           <p className="text-xs sm:text-sm text-zinc-400 truncate mt-0.5">{item.songName}</p>

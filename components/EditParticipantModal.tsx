@@ -33,6 +33,7 @@ export default function EditParticipantModal({
   const [youtubeLink, setYoutubeLink] = useState(item.youtubeLink);
   const [mode, setMode] = useState<ParticipantMode>(item.mode);
   const [lyricsMode, setLyricsMode] = useState(item.lyricsMode);
+  const [skipReveal, setSkipReveal] = useState(item.skipReveal ?? false);
   const [lyricsRaw, setLyricsRaw] = useState(slidesToRaw(item.lyricsSlides));
 
   const hideNames = hideNameFields(mode);
@@ -51,6 +52,7 @@ export default function EditParticipantModal({
       mode,
       lyricsMode,
       lyricsSlides: lyricsMode ? parseLyrics(lyricsRaw) : [],
+      skipReveal,
     });
     onClose();
   };
@@ -169,6 +171,16 @@ export default function EditParticipantModal({
               className="w-4 h-4 accent-neon-magenta"
             />
             <span className="text-sm text-zinc-300">Lyrics Mode</span>
+          </label>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={skipReveal}
+              onChange={(e) => setSkipReveal(e.target.checked)}
+              className="w-4 h-4 accent-neon-yellow"
+            />
+            <span className="text-sm text-zinc-300">Skip Reveal</span>
           </label>
 
           {lyricsMode && (

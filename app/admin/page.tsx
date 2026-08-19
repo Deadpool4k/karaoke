@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import AdminPinGate from "@/components/AdminPinGate";
 import AddParticipantForm from "@/components/AddParticipantForm";
 import QueueList from "@/components/QueueList";
 import LyricsPIP from "@/components/LyricsPIP";
+import PendingRequests from "@/components/PendingRequests";
+import HistoryList from "@/components/HistoryList";
 import { emitEvent, getSocket } from "@/lib/socket";
 import type { AppState } from "@/lib/types";
 import { getActiveItem } from "@/lib/types";
 
-export default function AdminPage() {
+function AdminContent() {
   const [state, setState] = useState<AppState | null>(null);
   const [connected, setConnected] = useState(false);
 
@@ -42,7 +45,6 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-black pb-24">
-      {/* Header */}
       <header className="sticky top-0 z-40 border-b border-zinc-900 bg-black/90 backdrop-blur-md">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
@@ -74,14 +76,28 @@ export default function AdminPage() {
             >
               Projector ↗
             </Link>
+            <Link
+              href="/register"
+              target="_blank"
+              className="text-xs px-3 py-1.5 rounded-lg border border-zinc-700 text-zinc-400 hover:text-neon-magenta hover:border-neon-magenta/40 transition-all"
+            >
+              Register ↗
+            </Link>
           </div>
         </div>
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-        <AddParticipantForm />
+        {state && state.pendingRequests.length > 0 && (
+          <PendingRequests
+            requests={state.pendingRequests}
+            onApprove={(id) => emitEvent("request:approve", id)}
+            onReject={(id) => emitEvent("request:reject", id)}
+          />
+        )}
 
-        {/* Active participant controls */}
+        <AddParticipantForm queue={state?.queue ?? []} />
+
         {state?.activeId && (() => {
           const active = getActiveItem(state);
           if (!active) return null;
@@ -99,9 +115,15 @@ export default function AdminPage() {
                     Open Link
                   </button>
                 )}
+                <button
+                  onClick={() => emitEvent("active:idle")}
+                  className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider border border-zinc-600 text-zinc-400 hover:text-white transition-all"
+                >
+                  Terminat → Idle
+                </button>
                 {state.showYoutube && (
                   <span className="px-3 py-2 rounded-lg text-xs text-green-400 border border-green-400/30 bg-green-400/10">
-                    YouTube playing on projector
+                    YouTube activ
                   </span>
                 )}
               </div>
@@ -109,7 +131,6 @@ export default function AdminPage() {
           );
         })()}
 
-        {/* Queue Controls */}
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -126,8 +147,9 @@ export default function AdminPage() {
                 onClick={() => emitEvent("active:next")}
                 disabled={!state?.queue.length}
                 className="px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-neon-yellow/20 border border-neon-yellow/50 text-neon-yellow hover:bg-neon-yellow/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                title="Marchează ca terminat și trece la următorul"
               >
-                Next in Queue
+                Următorul
               </button>
               <button
                 onClick={() => emitEvent("active:clear")}
@@ -146,7 +168,9 @@ export default function AdminPage() {
               onSelect={(id) => emitEvent("active:set", id)}
               onRemove={(id) => emitEvent("queue:remove", id)}
               onReorder={(orderedIds) => emitEvent("queue:reorder", orderedIds)}
-              onMove={(id, direction) => emitEvent("queue:move", { id, direction })}
+              onMove={(id, direction) =>
+                emitEvent("queue:move", { id, direction })
+              }
             />
           ) : (
             <div className="rounded-xl border border-zinc-800 p-8 text-center">
@@ -160,9 +184,24 @@ export default function AdminPage() {
             </div>
           )}
         </section>
+
+        <section>
+          <h2 className="text-lg font-semibold text-white flex items-center gap-2 mb-1">
+            <span className="w-1 h-5 bg-zinc-600 rounded-full" />
+            Istoric — cine a cântat
+            {state && state.history.length > 0 && (
+              <span className="text-sm font-normal text-zinc-500">
+                ({state.history.length})
+              </span>
+            )}
+          </h2>
+          <p className="text-xs text-zinc-600 mb-3">
+            Apare automat când apeși „Terminat → Idle” sau „Următorul”.
+          </p>
+          {state && <HistoryList history={state.history} />}
+        </section>
       </div>
 
-      {/* Lyrics PIP */}
       {state && (
         <LyricsPIP
           state={state}
@@ -171,5 +210,13 @@ export default function AdminPage() {
         />
       )}
     </main>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <AdminPinGate>
+      <AdminContent />
+    </AdminPinGate>
   );
 }

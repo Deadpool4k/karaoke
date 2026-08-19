@@ -8,24 +8,43 @@ export interface QueueItem {
   youtubeLink: string;
   mode: ParticipantMode;
   lyricsMode: boolean;
-  /** Lyrics slides parsed from textarea (one empty line separates slides) */
   lyricsSlides: string[];
+  /** Skip reveal animation — go straight to content/lyrics */
+  skipReveal: boolean;
+}
+
+export interface GuestRequest {
+  id: string;
+  firstName: string;
+  lastName: string;
+  songName: string;
+  youtubeLink: string;
+  createdAt: number;
+}
+
+export interface HistoryEntry {
+  id: string;
+  firstName: string;
+  lastName: string;
+  songName: string;
+  performedAt: number;
 }
 
 export interface AppState {
   queue: QueueItem[];
+  pendingRequests: GuestRequest[];
+  history: HistoryEntry[];
   activeId: string | null;
   lyricsSlideIndex: number;
-  /** Whether the reveal animation is playing on projector */
   isRevealing: boolean;
-  /** After reveal completes, show lyrics or singer info */
   showContent: boolean;
-  /** Admin triggered — projector shows full-screen YouTube iframe */
   showYoutube: boolean;
 }
 
 export const initialState: AppState = {
   queue: [],
+  pendingRequests: [],
+  history: [],
   activeId: null,
   lyricsSlideIndex: 0,
   isRevealing: false,
@@ -33,7 +52,6 @@ export const initialState: AppState = {
   showYoutube: false,
 };
 
-/** Split slides on a single empty line between stanzas */
 export function parseLyrics(raw: string): string[] {
   if (!raw.trim()) return [];
   return raw
@@ -99,7 +117,10 @@ export function getActiveItem(state: AppState): QueueItem | null {
   return state.queue.find((item) => item.id === state.activeId) ?? null;
 }
 
-export function getParticipantName(item: QueueItem): string {
+export function getParticipantName(item: {
+  firstName: string;
+  lastName: string;
+}): string {
   return `${item.firstName} ${item.lastName}`.trim();
 }
 
@@ -107,4 +128,25 @@ export function getQueueDisplayName(item: QueueItem): string {
   const special = getSpecialModeLabel(item.mode);
   if (special) return special;
   return getParticipantName(item) || "—";
+}
+
+export function personKey(firstName: string, lastName: string): string {
+  return `${firstName.trim().toLowerCase()}|${lastName.trim().toLowerCase()}`;
+}
+
+export function isDuplicateInQueue(
+  firstName: string,
+  lastName: string,
+  queue: QueueItem[]
+): boolean {
+  const key = personKey(firstName, lastName);
+  if (!firstName.trim()) return false;
+  return queue.some((q) => personKey(q.firstName, q.lastName) === key);
+}
+
+export function formatHistoryTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString("ro-RO", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }

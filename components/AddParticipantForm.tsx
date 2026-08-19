@@ -5,8 +5,10 @@ import { motion } from "framer-motion";
 import {
   hideNameFields,
   hideSongField,
+  isDuplicateInQueue,
   parseLyrics,
   type ParticipantMode,
+  type QueueItem,
 } from "@/lib/types";
 import { emitEvent } from "@/lib/socket";
 
@@ -16,14 +18,20 @@ const MODES: { value: ParticipantMode; label: string }[] = [
   { value: "surpriza_speciala", label: "Surpriză specială" },
 ];
 
-export default function AddParticipantForm() {
+interface AddParticipantFormProps {
+  queue?: QueueItem[];
+}
+
+export default function AddParticipantForm({ queue = [] }: AddParticipantFormProps) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [songName, setSongName] = useState("");
   const [youtubeLink, setYoutubeLink] = useState("");
   const [mode, setMode] = useState<ParticipantMode>("standard");
   const [lyricsMode, setLyricsMode] = useState(false);
+  const [skipReveal, setSkipReveal] = useState(false);
   const [lyricsRaw, setLyricsRaw] = useState("");
+  const [duplicateWarning, setDuplicateWarning] = useState("");
 
   const hideNames = hideNameFields(mode);
   const hideSong = hideSongField(mode);
@@ -31,6 +39,16 @@ export default function AddParticipantForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (mode === "standard" && (!firstName.trim() || !songName.trim())) return;
+
+    if (
+      mode === "standard" &&
+      isDuplicateInQueue(firstName, lastName, queue)
+    ) {
+      setDuplicateWarning(
+        `${firstName} ${lastName}`.trim() + " este deja în coadă."
+      );
+      return;
+    }
 
     emitEvent("queue:add", {
       firstName: hideNames ? "" : firstName.trim(),
@@ -40,6 +58,7 @@ export default function AddParticipantForm() {
       mode,
       lyricsMode,
       lyricsSlides: lyricsMode ? parseLyrics(lyricsRaw) : [],
+      skipReveal,
     });
 
     setFirstName("");
@@ -48,7 +67,9 @@ export default function AddParticipantForm() {
     setYoutubeLink("");
     setMode("standard");
     setLyricsMode(false);
+    setSkipReveal(false);
     setLyricsRaw("");
+    setDuplicateWarning("");
   };
 
   return (
@@ -180,6 +201,28 @@ export default function AddParticipantForm() {
             Lasă o linie goală între strofe pentru slide nou.
           </p>
         </motion.div>
+      )}
+
+      <label className="flex items-center gap-3 cursor-pointer group">
+        <div className="relative">
+          <input
+            type="checkbox"
+            checked={skipReveal}
+            onChange={(e) => setSkipReveal(e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 rounded-full bg-zinc-800 border border-zinc-700 peer-checked:bg-neon-yellow/20 peer-checked:border-neon-yellow/50 transition-all" />
+          <div className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-zinc-600 peer-checked:translate-x-5 peer-checked:bg-neon-yellow transition-all" />
+        </div>
+        <span className="text-sm text-zinc-300 group-hover:text-neon-yellow transition-colors">
+          Skip Reveal (direct pe ecran)
+        </span>
+      </label>
+
+      {duplicateWarning && (
+        <p className="text-amber-400 text-sm bg-amber-400/10 border border-amber-400/30 rounded-lg px-3 py-2">
+          {duplicateWarning}
+        </p>
       )}
 
       <button

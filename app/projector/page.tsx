@@ -9,6 +9,7 @@ import {
   type AppState,
 } from "@/lib/types";
 import ProjectorShell from "@/components/projector/ProjectorShell";
+import ProjectorControls from "@/components/projector/ProjectorControls";
 import IdleScreen from "@/components/projector/IdleScreen";
 import SingerReveal from "@/components/projector/SingerReveal";
 import LyricsDisplay from "@/components/projector/LyricsDisplay";
@@ -33,9 +34,14 @@ export default function ProjectorPage() {
   }, []);
 
   const active = state ? getActiveItem(state) : null;
+  const hasActive = !!state?.activeId;
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (e.key === "Escape" && hasActive) {
+        emitEvent("active:idle");
+        return;
+      }
       if (state?.showYoutube) return;
       if (!active?.lyricsMode || !state?.showContent) return;
       if (active.lyricsSlides.length === 0) return;
@@ -52,7 +58,7 @@ export default function ProjectorPage() {
           break;
       }
     },
-    [active, state?.showContent, state?.showYoutube]
+    [active, state?.showContent, state?.showYoutube, hasActive]
   );
 
   useEffect(() => {
@@ -67,11 +73,7 @@ export default function ProjectorPage() {
       content = <YouTubeDisplay url={active.youtubeLink} />;
     } else if (isLyricsIntroPhase(state, active)) {
       content = (
-        <SingerReveal
-          item={active}
-          isRevealing={false}
-          showContent={true}
-        />
+        <SingerReveal item={active} isRevealing={false} showContent={true} />
       );
     } else if (
       active.lyricsMode &&
@@ -99,5 +101,10 @@ export default function ProjectorPage() {
     }
   }
 
-  return <ProjectorShell>{content}</ProjectorShell>;
+  return (
+    <ProjectorShell>
+      {content}
+      <ProjectorControls hasActive={hasActive} />
+    </ProjectorShell>
+  );
 }

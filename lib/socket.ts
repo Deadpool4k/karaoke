@@ -23,10 +23,7 @@ export function getSocket(): Socket {
 
 type QueueAddPayload = Omit<import("./types").QueueItem, "id">;
 
-export function emitEvent(
-  event: "queue:add",
-  item: QueueAddPayload
-): void;
+export function emitEvent(event: "queue:add", item: QueueAddPayload): void;
 export function emitEvent(
   event: "queue:update",
   item: QueueAddPayload & { id: string }
@@ -37,9 +34,21 @@ export function emitEvent(
   event: "queue:move",
   payload: { id: string; direction: "up" | "down" }
 ): void;
+export function emitEvent(
+  event: "request:submit",
+  payload: {
+    firstName: string;
+    lastName: string;
+    songName: string;
+    youtubeLink: string;
+  }
+): void;
+export function emitEvent(event: "request:approve", id: string): void;
+export function emitEvent(event: "request:reject", id: string): void;
 export function emitEvent(event: "active:set", id: string): void;
 export function emitEvent(event: "active:next"): void;
 export function emitEvent(event: "active:clear"): void;
+export function emitEvent(event: "active:idle"): void;
 export function emitEvent(event: "youtube:open"): void;
 export function emitEvent(event: "lyrics:slide", index: number): void;
 export function emitEvent(event: "lyrics:next"): void;
