@@ -7,13 +7,15 @@ const { Server } = require("socket.io");
 const { v4: uuidv4 } = require("uuid");
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = process.env.HOSTNAME || "0.0.0.0";
+const hostname = "0.0.0.0";
 const port = parseInt(process.env.PORT || "3000", 10);
 
 const DATA_DIR = path.join(__dirname, "data");
 const STATE_FILE = path.join(DATA_DIR, "state.json");
 
-const app = next({ dev, hostname, port });
+console.log(`Starting server (NODE_ENV=${process.env.NODE_ENV || "undefined"}, port=${port})`);
+
+const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const defaultState = {
@@ -386,4 +388,7 @@ app.prepare().then(() => {
     console.log(`> Projector: http://localhost:${port}/projector`);
     console.log(`> Register: http://localhost:${port}/register`);
   });
+}).catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
